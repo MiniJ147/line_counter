@@ -1,7 +1,7 @@
 import os 
 from collections import deque
 
-total = 0
+total, files = 0, deque()
 directories = [input("Enter Dir:\n>>> ")]
 blacklist = set(list(input("Enter Blacklist Dir (name), file (name.type), or file types (.type):\n>>> ").split(" ")))
 special = set(list(input("Enter Special file types to count (.go, .cpp)\nLeave Blank if you don't want to be specfic\n>>> ").split(" ")))
@@ -13,8 +13,6 @@ if '' in special: special.remove('')
 special_active = len(special) > 0
 
 print("CURR SETTINGS:\nBlacklist: ",blacklist,"\nSpecial Active: ",special_active," ",special)
-
-files = deque()
 
 while directories:
     current_dir = directories.pop()
