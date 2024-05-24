@@ -1,0 +1,3 @@
+C:\Users\Jake Paul\Desktop\Programming\C++ Projects\Vision Game
+.git .vs CMakeCXXCompilerId.cpp glm.cpp
+.cpp

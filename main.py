@@ -1,99 +1,38 @@
-import os
+import os 
+from collections import deque
 
-#inital data
-blacklist = []
-blacklist_dir = []
-types = []
+total = 0
+root = input("Enter Dir:\n>>> ")
+blacklist = set(list(input("Enter Blacklist Dir (name), file (name.type), or file types (.type):\n>>> ").split(" ")))
+special = set(list(input("Enter Special file types to count (.go, .cpp)\nLeave Blank if you don't want to be specfic\n>>> ").split(" ")))
 
-#checking if the file is in our blacklisted files
-def check_black_list(path):
-        for i in range(len(blacklist)):
-            if path==blacklist[i]:
-                  return False
-        
-        return True
+#weird glitch
+if '' in blacklist: blacklist.remove('')
+if '' in special: special.remove('')
 
- #parsing the file types to push into the list
-def parse_type(file):
-     for i in range(len(file)-1,0,-1):
-          if(file[i]=='.'):
-               return file[i:len(file)]
+special_active = len(special) > 0
 
-#parsing the specfic data out of the strings to push to the list
-def parse_user_input_str(str):
-    lower = 0
-    data = []
-    
-    for i in range(len(str)):
-        if(str[i]==','):
-            data.append(str[lower:i])
-            lower=i+1
-    data.append(str[lower:len(str)])
-    return data
+print("CURR SETTINGS:\nBlacklist: ",blacklist,"\nSpecial Active: ",special_active," ",special)
 
-#checking if dir is banned
-def is_dir_banned(path):
-    #must = '' because if user enters nothing then it returns a blank str
-    if(blacklist_dir[0]==''):
-        return False
-    
-    for i in range(len(blacklist_dir)):
-         if blacklist_dir[i]==path:
-              return True
-    return False
+directories = [root]
+files = deque()
 
-def Directory(dir_path):
-    total_lines = 0
-    files = []
-    sub_dir = []
+while directories:
+    current_dir = directories.pop()
+    scan = os.scandir(current_dir)
+    for entry in scan:
+        name = entry.path.split("\\")[-1]
+        if entry.is_dir() and not name in blacklist: directories.append(entry.path)
+        elif entry.is_file() and not name in blacklist:
+            file_type = "."+name.split(".")[-1]
+            if special_active and file_type in special: files.append(entry.path)
+            elif not special_active and not file_type in blacklist: files.append(entry.path)
+    scan.close()
 
-    #grabbing data
-    for path in os.listdir(dir_path):
-    # check if current path is a file
-        if os.path.isfile(os.path.join(dir_path, path)):
-            if(check_black_list(path)):
-                #must = '' because if user enters nothing then it returns a blank str
-                if(types[0]==''):
-                    files.append(path)
-                else:
-                    for i in range(len(types)):
-                         if types[i]==parse_type(path):
-                              files.append(path)  
-                              break        
-        else:
-            if not(is_dir_banned(path)):
-                sub_dir.append(path)
+while files:
+    curr = files.popleft()
+    lines = len(open(curr,'r').readlines())
+    print(curr.split("\\")[-1],lines)
+    total+=lines
 
-    print("Sub Dir: "+str(sub_dir))
-
-    #recursively searching through the sub directorys of the project
-    for i in range(len(sub_dir)):
-          total_lines+=Directory(dir_path+'\\'+sub_dir[i])
-
-    #counting lines
-    for i in range(len(files)):
-        with open(r""+dir_path+"\\"+files[i], 'r') as fp:
-            num_lines = sum(1 for line in fp)
-            total_lines += num_lines
-            print('('+files[i]+') Total lines:', num_lines)
-
-    return total_lines
-
-#grabbing user input
-dir_path = input("Enter Project Path\n>>> ")
-blacklist_str = input("\nEnter blacklist files (put a , to seperate)\n>>> ")
-types_str = input("\nEnter specfic file types to count (put a , to seperate) (EX: main.c --> \'.c\')\n>>> ")
-blacklist_dir_str = input("\nEnter excluded directory (put a , to seperate)\n>>> ")
-
-#parsing data and pushing it into the list
-blacklist = parse_user_input_str(blacklist_str)
-blacklist_dir = parse_user_input_str(blacklist_dir_str)
-types = parse_user_input_str(types_str)
-
-#printing data
-print("\nSpecfic: "+str(types))
-print("Blacklist: "+str(blacklist))
-print("Blacklist Dir: "+str(blacklist_dir))
-print("\nProjects Total Lines: "+str(Directory(dir_path)))
-
-input(">>>") 
+print("Total: ",total)
