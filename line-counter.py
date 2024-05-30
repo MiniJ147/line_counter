@@ -28,6 +28,8 @@ while directories: #loop until out of directories
             elif not special_active and not file_type in blacklist: files.append(entry.path) #if not special and not blacklisted
     scan.close() #close current scan and keep looping
 
+total_files = len(files)
+
 #count files queued up through search
 while files:
     curr = files.popleft()
@@ -35,4 +37,6 @@ while files:
     print(curr.split("\\")[-1],lines) #print file then line count
     total+=lines
 
-print("Total: ",total)
+print("\n|=====STATS=====|\n")
+print("Total Files: ",total_files)
+print("Total Lines: ",total)
